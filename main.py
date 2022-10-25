@@ -4,21 +4,27 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import network_loader as loader
-import metrics
 from networkx.algorithms.community.centrality import girvan_newman
 
+from plots import *
+from metrics import *
 
 PATH = "./charliehebdo-all-rnr-threads/"
 
 
 def main():
     G = loader.load_rnr_graph(PATH)
-    metrics.print_general(G)
-    metrics.print_degrees(G)
-    metrics.print_centrality(G)
-    metrics.print_clustering(G)
-    metrics.print_components(G)
-    metrics.print_density(G)
+
+    print_general(G)
+    degrees = print_degrees(G)
+    centralities = print_centrality(G)
+    clustering = print_clustering(G)
+    print_components(G)
+    print_density(G)
+
+    degree_distribution(degrees)
+    centrality_distribution(centralities)
+    clustering_distribution(clustering)
     # print_communities(G)
     #show_plots(G)
 
@@ -86,17 +92,6 @@ def print_communities(G):
 
     print(f'partitioning')
     
-
-def show_plots(G):
-    # Degree distribution 
-    degrees = [d for n,d in G.degree()]
-    plt.hist(degrees)
-    plt.yscale('log')
-    plt.xscale()
-    plt.show()
-    
-    # Centrality distribution
-    number_of_points = nx.number_of_nodes(G)
     
 
 if __name__ == "__main__":
