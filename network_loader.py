@@ -5,6 +5,7 @@ This file contains the logic for loading the raw data in networkx graphs
 import networkx as nx
 import json
 import os
+from dateutil import parser
 
 PATH = "./charliehebdo-all-rnr-threads/"
 
@@ -14,10 +15,10 @@ def main():
     G = load_rnr_graph(PATH)
     print('Rumours/non-rumour graph loaded successfully!')
     i = 0
-    for n in G.nodes:
+    for n0, n1 in G.edges:
         if i > 20:
             break
-        print(G.nodes[n])
+        print(G[n0][n1])
         i += 1
 
 
@@ -28,8 +29,11 @@ def load_tweet(tid, G, path):
     f = open(path + f'{tid}/source-tweets/{tid}.json')
     tweet = json.load(f)
     f.close()
+
     G.add_node(tweet['user']['id'])
-    G.add_edges_from([(tweet['user']['id'], mention['id']) for mention in tweet['entities']['user_mentions']])
+    G.add_edges_from([(tweet['user']['id'], m['id']) for m in tweet['entities']['user_mentions']])
+    set_edge_time(G, tweet)
+
     return tweet['user']['id']
 
 
@@ -49,14 +53,16 @@ This function loads the reactions to a tweet in the dataset.
 """
 def load_reactions(tid, G, path):
     r_ids = []
-    files = os.listdir(path + f'{tid}/reactions')
-    for reaction_file in files:
+    
+    for reaction_file in os.listdir(path + f'{tid}/reactions'):
         rf = open(path + f'{tid}/reactions/' + reaction_file)
         subtweet = json.load(rf)
-        G.add_edges_from([(subtweet['user']['id'], mention['id']) for mention in subtweet['entities']['user_mentions']])
-        r_ids.append(subtweet['user']['id']) 
-
         rf.close()
+
+        G.add_edges_from([(subtweet['user']['id'], m['id']) for m in subtweet['entities']['user_mentions']])
+        set_edge_time(G, subtweet)
+
+        r_ids.append(subtweet['user']['id']) 
 
     return r_ids
 
@@ -72,6 +78,19 @@ def guilt_by_reaction(tid, G, path, rn_ids):
         else:
             G.nodes[rid]['non-rumour_count'] = G.nodes[rid].get('non-rumour_count', 0) + 1
 
+
+"""
+This function sets the time attribute to the edges in the graph.
+"""
+def set_edge_time(G, tweet_json):
+    for m in tweet_json['entities']['user_mentions']:
+        edge = G[tweet_json['user']['id']][m['id']]
+        if 'times' not in edge.keys():
+            edge['times'] = []
+
+        edge['times'].append(parser.parse(tweet_json['created_at'])) 
+
+    
 """
 This function loads the tweets in a directory.
 """
@@ -97,26 +116,25 @@ def classify(G):
     for n in G.nodes:
         rc = G.nodes[n].get('rumour_count', 0)
         nrc = G.nodes[n].get('non-rumour_count', 0)
-        G.nodes[n]['is_spreading_rumours'] = (not rc < nrc)
+        G.nodes[n]['is_spreading_rumours'] = (rc > nrc)
         
     
 """
 This function loads the graph.
 """
-def load_rnr_graph(path):
-    G = nx.Graph()
+def load_rnr_graph(path, directed=False):
+    G = None
+
+    if (directed):
+        G = nx.DiGraph()
+    else:
+        G = nx.Graph()
+
     load_directory(G, path + "rumours/")
     load_directory(G, path + "non-rumours/")
     classify(G)
     return G
 
-
-def load_rnr_graph_directed(path):
-    G = nx.DiGraph()
-    load_directory(G, path + "rumours/")
-    load_directory(G, path + "non-rumours/")
-    classify(G)
-    return G
 
 if __name__ == "__main__":
     main()

@@ -3,30 +3,59 @@ from re import sub
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import network_loader as loader
 from networkx.algorithms.community.centrality import girvan_newman
 
 from plots import *
 from metrics import *
+import network_loader as loader
+from longitudinal import *
 
 PATH = "./charliehebdo-all-rnr-threads/"
 
 
 def main():
+    """
     G = loader.load_rnr_graph(PATH)
 
     print_general(G)
     degrees = print_degrees(G)
     centralities = print_centrality(G)
     clustering = print_clustering(G)
-    print_components(G)
-    print_density(G)
+    components = print_components(G)
+    density = print_density(G)
+    plot_distributions(degrees, centralities, clustering)    
+    """
+    # print_communities(G)
+    D = loader.load_rnr_graph(PATH, directed=True)
+    plot_network_activity(D)
 
+
+
+"""
+This function prints the network degrees, centralities, and clustering distributions
+"""
+def plot_distributions(degrees, centralities, clustering):
     degree_distribution(degrees)
     centrality_distribution(centralities)
     clustering_distribution(clustering)
-    # print_communities(G)
-    #show_plots(G)
+
+
+"""
+This function plots the activity of the network
+"""
+def plot_network_activity(D):
+    hubs, authorities = nx.hits(D)
+
+    max_hub = max(hubs, key=hubs.get)
+    max_authority = max(authorities, key=authorities.get)
+    
+    print("max hub activity:")
+    max_hub_activity = node_activity(D, max_hub, out=True)
+    print(max_hub_activity, end="\n\n")
+
+    print("max authority activity:")
+    max_authority_activity = node_activity(D, max_authority)
+    print(max_authority_activity, end='\n\n')
 
 
 # PART 2
@@ -79,7 +108,7 @@ def print_communities(G):
         print()    
     """
 
-    D = loader.load_rnr_graph_directed(PATH)
+    D = loader.load_rnr_graph(PATH, directed=True)
     hubs, authorities = nx.hits(D)
 
     max_hub = max(hubs, key=hubs.get)
