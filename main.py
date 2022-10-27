@@ -19,8 +19,8 @@ def main():
     metrics.print_clustering(G)
     metrics.print_components(G)
     metrics.print_density(G)
-    # print_communities(G)
-    #show_plots(G)
+    print_communities(G)
+    show_plots(G)
 
 
 # PART 2
@@ -44,7 +44,6 @@ def print_communities(G):
             nr += 1
     print(f"Homophily cross-(non)rumour = {cross / len(G.edges):.4f}")
     print(f'\t 2qp = {r * nr / len(G.nodes()) / len(G.nodes()):.4f}')
-        
 
     homophily = nx.numeric_assortativity_coefficient(G, 'is_spreading_rumours')
     print(f'homophily = {homophily}')
@@ -76,28 +75,61 @@ def print_communities(G):
     D = loader.load_rnr_graph_directed(PATH)
     hubs, authorities = nx.hits(D)
 
+    global max_hub
+    global max_authority
+
     max_hub = max(hubs, key=hubs.get)
     max_authority = max(authorities, key=authorities.get)
 
     print(f'Max hub node = {max_hub} with value of {hubs[max_hub]}')
     print(f'{D.nodes[max_hub]}')
-    print(f'Max authority node = {max_authority} with value of {authorities[max_authority]}')
+    print(
+        f'Max authority node = {max_authority} with value of {authorities[max_authority]}')
     print(f'{D.nodes[max_authority]}')
 
     print(f'partitioning')
-    
+
 
 def show_plots(G):
-    # Degree distribution 
-    degrees = [d for n,d in G.degree()]
-    plt.hist(degrees)
+    # Degree distribution
+    degrees = [d for n, d in G.degree()]
+    plt.hist(degrees, bins=100)
     plt.yscale('log')
-    plt.xscale()
+    plt.xscale('linear')
     plt.show()
-    
+
     # Centrality distribution
     number_of_points = nx.number_of_nodes(G)
-    
+
+    # Ego-Graph
+    ego_hub = nx.ego_graph(G, max_hub)
+    color_map = []
+    node_map = []
+    i = 0
+    for node in ego_hub:
+        if ego_hub.nodes[node]['is_spreading_rumours'] == True:
+            color_map.append('blue')
+        else:
+            color_map.append('red')
+        node_map.append(ego_hub.degree[node] * 100)
+        i += 1
+    nx.draw(ego_hub, node_color=color_map, node_size=node_map)
+    plt.show()
+    ego_authority = nx.ego_graph(G, max_authority)
+    authority_color_map = []
+    authority_node_map = []
+    i = 0
+    for node in ego_authority:
+        if ego_authority.nodes[node]['is_spreading_rumours'] == True:
+            authority_color_map.append('blue')
+        else:
+            authority_color_map.append('red')
+        authority_node_map.append(ego_authority.degree[node] * 5)
+        i += 1
+    nx.draw(ego_authority, node_size=authority_node_map,
+            node_color=authority_color_map)
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
