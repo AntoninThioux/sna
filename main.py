@@ -27,7 +27,7 @@ def main():
     """
     # print_communities(G)
     D = loader.load_rnr_graph(PATH, directed=True)
-    plot_network_activity(D)
+    network_activity(D)
 
 
 
@@ -39,23 +39,6 @@ def plot_distributions(degrees, centralities, clustering):
     centrality_distribution(centralities)
     clustering_distribution(clustering)
 
-
-"""
-This function plots the activity of the network
-"""
-def plot_network_activity(D):
-    hubs, authorities = nx.hits(D)
-
-    max_hub = max(hubs, key=hubs.get)
-    max_authority = max(authorities, key=authorities.get)
-    
-    print("max hub activity:")
-    max_hub_activity = node_activity(D, max_hub, out=True)
-    print(max_hub_activity, end="\n\n")
-
-    print("max authority activity:")
-    max_authority_activity = node_activity(D, max_authority)
-    print(max_authority_activity, end='\n\n')
 
 
 # PART 2

@@ -2,6 +2,7 @@
 This file is resposible for creating and displaying the plots
 """
 
+from urllib import response
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -44,4 +45,15 @@ def clustering_distribution(clustering):
     plt.ylabel('Quantity of Nodes')
     plt.xticks(bins + 0.05, labels=[f"{x:.1f} - {x+0.1:.1f}" for x in bins], rotation=25)
     plt.xlim(left=-0.025,right=1.025)
+    plt.show()
+
+
+def plot_activity(rpm, rph, title="Node activity"):
+    padding_rpm = len(rph) - len(rpm) + 10
+    plt.plot(list(range(len(rph) + 10)), rph + [0] * 10, label="responses per hour", color="b")
+    plt.plot(list(range(len(rph) + 10)), rpm + [0] * padding_rpm, label="responses per minute", color="r")
+    plt.title(title)
+    plt.xlabel('seconds since first response')
+    plt.ylabel('number of responses')
+    plt.legend()
     plt.show()
