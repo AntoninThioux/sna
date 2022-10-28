@@ -57,3 +57,15 @@ def plot_activity(rpm, rph, title="Node activity"):
     plt.ylabel('number of responses')
     plt.legend()
     plt.show()
+
+
+def plot_share(share_a, share_b, title, labels):
+    plt.plot(list(range(len(share_a))), share_a, label=labels[0], color='orange')
+    plt.plot(list(range(len(share_b))), share_b, label=labels[1], color='green')
+    plt.title(title)
+    plt.xlabel('time seconds')
+    plt.ylabel('share of tweets')
+    plt.xlim(left=0, right=max(len(share_a), len(share_b)))
+    plt.ylim(top=1, bottom=0)
+    plt.legend()
+    plt.show()
