@@ -1,5 +1,6 @@
 from html import entities
 from re import sub
+from tkinter import N
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -7,14 +8,17 @@ from networkx.algorithms.community.centrality import girvan_newman
 
 from plots import *
 from metrics import *
-import network_loader as loader
+from network_loader import NetworkLoader
 from longitudinal import *
 
 PATH = "./charliehebdo-all-rnr-threads/"
 
 
+loader = NetworkLoader(PATH)
+
+
 def main():
-    G = loader.load_rnr_graph(PATH)
+    G = loader.get_graph()
     print_general(G)
     degrees = print_degrees(G)
     centralities = print_centrality(G)
@@ -24,9 +28,9 @@ def main():
     plot_distributions(degrees, centralities, clustering)    
     print_communities(G)
     show_plots(G)
-    D = loader.load_rnr_graph(PATH, directed=True)
+    D = loader.get_graph(directed=True)
     network_activity(D)
-
+    network_evolution()
 
 
 """
@@ -50,18 +54,18 @@ def print_communities(G):
 
     cross = 0
     for (n0, n1) in G.edges():
-        if G.nodes[n0]['is_spreading_rumours'] and not G.nodes[n1]['is_spreading_rumours']:
+        if G.nodes[n0]['isSpreadingRumours'] and not G.nodes[n1]['isSpreadingRumours']:
             cross += 1
     r = nr = 0
     for n in G.nodes():
-        if G.nodes[n]['is_spreading_rumours']:
+        if G.nodes[n]['isSpreadingRumours']:
             r += 1
         else:
             nr += 1
     print(f"Homophily cross-(non)rumour = {cross / len(G.edges):.4f}")
     print(f'\t 2qp = {r * nr / len(G.nodes()) / len(G.nodes()):.4f}')
 
-    homophily = nx.numeric_assortativity_coefficient(G, 'is_spreading_rumours')
+    homophily = nx.numeric_assortativity_coefficient(G, 'isSpreadingRumours')
     print(f'homophily = {homophily}')
 
     bridges = nx.bridges(G)
@@ -72,7 +76,7 @@ def print_communities(G):
     generater = girvan_newman(G)
     next(generater)
     print("Test")
-    communities = [[G.nodes[n]['is_spreading_rumours'] for n in c] for c in next(generater)]
+    communities = [[G.nodes[n]['isSpreadingRumours'] for n in c] for c in next(generater)]
     print(f"number of communities = {len(communities)}")
     l = [c.count(True) / len(c) for c in communities]
     for i in range(5):
@@ -80,7 +84,7 @@ def print_communities(G):
     print()
     original_len = len(communities)
     while (len(communities) < 3 * original_len):
-        communities = [[G.nodes[n]['is_spreading_rumours'] for n in c] for c in next(generater)] 
+        communities = [[G.nodes[n]['isSpreadingRumours'] for n in c] for c in next(generater)] 
         l = [c.count(True) / len(c) for c in communities]
         print(f"number of communities = {len(communities)}")
         for i in range(5):
@@ -88,7 +92,7 @@ def print_communities(G):
         print()    
     """
 
-    D = loader.load_rnr_graph(PATH, directed=True)
+    D = loader.get_graph(directed=True)
     hubs, authorities = nx.hits(D)
 
     global max_hub
@@ -113,7 +117,7 @@ def show_plots(G):
     node_map = []
     i = 0
     for node in ego_hub:
-        if ego_hub.nodes[node]['is_spreading_rumours'] == True:
+        if ego_hub.nodes[node]['isSpreadingRumours'] == True:
             color_map.append('blue')
         else:
             color_map.append('red')
@@ -126,7 +130,7 @@ def show_plots(G):
     authority_node_map = []
     i = 0
     for node in ego_authority:
-        if ego_authority.nodes[node]['is_spreading_rumours'] == True:
+        if ego_authority.nodes[node]['isSpreadingRumours'] == True:
             authority_color_map.append('blue')
         else:
             authority_color_map.append('red')

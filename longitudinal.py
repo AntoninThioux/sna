@@ -80,7 +80,7 @@ def network_evolution():
 
     facts, nonfacts = missinformation_frequencies()
     nonfact_share, fact_share = running_share(nonfacts, facts)
-    plot_share(nonfact_share, fact_share, 'Share of missinformation in rumours', ['missinformation share', 'fact share'])
+    plot_share(nonfact_share, fact_share, 'Share of missinformation in rumours', ['incorrect rumour share', 'correct rumour share'])
 
 
 """
