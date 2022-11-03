@@ -1,6 +1,3 @@
-from html import entities
-from re import sub
-from tkinter import N
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -26,7 +23,7 @@ def main():
     components = print_components(G)
     density = print_density(G)
     plot_distributions(degrees, centralities, clustering)    
-    print_communities(G)
+    print_communities(G)    
     show_plots(G)
     D = loader.get_graph(directed=True)
     network_activity(D)
@@ -54,7 +51,7 @@ def print_communities(G):
 
     cross = 0
     for (n0, n1) in G.edges():
-        if G.nodes[n0]['isSpreadingRumours'] and not G.nodes[n1]['isSpreadingRumours']:
+        if G.nodes[n0]['isSpreadingRumours'] ^ G.nodes[n1]['isSpreadingRumours']:
             cross += 1
     r = nr = 0
     for n in G.nodes():
@@ -63,7 +60,7 @@ def print_communities(G):
         else:
             nr += 1
     print(f"Homophily cross-(non)rumour = {cross / len(G.edges):.4f}")
-    print(f'\t 2qp = {r * nr / len(G.nodes()) / len(G.nodes()):.4f}')
+    print(f'\t 2qp = {(2 * r * nr) / (len(G.nodes()) ** 2):.4f}')
 
     homophily = nx.numeric_assortativity_coefficient(G, 'isSpreadingRumours')
     print(f'homophily = {homophily}')
@@ -111,6 +108,17 @@ def print_communities(G):
 
 
 def show_plots(G):
+    markers = [plt.Line2D([0,0],[0,0], color='blue', marker='o', linestyle=''),
+                plt.Line2D([0,0],[0,0], color='red', marker='o', linestyle='')]
+
+    # Clique graph
+    clique_G = G.subgraph(sorted([x for x in nx.find_cliques(G)], key=len)[-1])
+    clique_color_map = ['blue' * G.nodes[n]['isSpreadingRumours'] + 'red' * (not G.nodes[n]['isSpreadingRumours']) for n in clique_G]
+    clique_node_map = [100 * G.degree(n) for n in clique_G]
+    nx.draw(clique_G, node_color=clique_color_map, node_size=clique_node_map)
+    plt.legend(markers, ['Rumours', 'Non-Rumours'])
+    plt.show()
+
     # Ego-Graph
     ego_hub = nx.ego_graph(G, max_hub)
     color_map = []
@@ -124,6 +132,7 @@ def show_plots(G):
         node_map.append(ego_hub.degree[node] * 100)
         i += 1
     nx.draw(ego_hub, node_color=color_map, node_size=node_map)
+    plt.legend(markers, ['Rumours', 'Non-Rumours'])
     plt.show()
     ego_authority = nx.ego_graph(G, max_authority)
     authority_color_map = []
@@ -138,6 +147,7 @@ def show_plots(G):
         i += 1
     nx.draw(ego_authority, node_size=authority_node_map,
             node_color=authority_color_map)
+    plt.legend(markers, ['Rumours', 'Non-Rumours'])
     plt.show()
 
 
