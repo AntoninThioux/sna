@@ -4,7 +4,7 @@ This is a private repo for working on the socail network analysis project (2022-
 
 Deliverables:
  - Code
- - Report ([link to overleaf project](https://www.overleaf.com/5813321786mhpfrcprwcjs))
+ - Report ([link to overleaf project](https://www.overleaf.com/4423289449gsjkvkxrsscd))
 
 ## Instructions:
 ### Network statistics - Metrices
